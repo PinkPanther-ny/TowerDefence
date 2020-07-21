@@ -17,4 +17,5 @@ public class Route {
         this.location = location;
         this.rotation = rotation;
     }
+
 }
