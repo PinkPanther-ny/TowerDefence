@@ -64,7 +64,6 @@ public class Game extends AbstractGame {
         
         int i=0;
         totalStep = 0;
-
         while(i < polyPointNumber - 1){
 
             Vector2 normalisedVelocity = new Vector2(Polygons[i + 1].x - Polygons[i].x, Polygons[i+1].y - Polygons[i].y).normalised();
@@ -76,7 +75,7 @@ public class Game extends AbstractGame {
             }
             totalStep++;
         }
-        
+
         path = new Point[totalStep];
         rotation = new double[totalStep];
         index = 0;
@@ -108,11 +107,10 @@ public class Game extends AbstractGame {
      */
     @Override
     protected void update(Input input) {
+
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
 
         if (enemy[enemyNumber-1].getStep()<totalStep) {
-
-            double currentTime = System.currentTimeMillis();;
 
             spawnTime += (1/60.0) * 1000 * timeScale;
             if (spawnTime>5000 && activeNumber!=enemyNumber){
@@ -122,7 +120,7 @@ public class Game extends AbstractGame {
             }
 
             conformableFont.drawString("timescale:" + timeScale + "x", timeScaleFontLocation.x, timeScaleFontLocation.y, blackColor);
-            if (input.wasPressed(Keys.K) && timeScale-1>0) {
+            if (input.wasPressed(Keys.K) && timeScale-1>=0) {
                 timeScale -= 1;
             }
             if (input.wasPressed(Keys.L)){

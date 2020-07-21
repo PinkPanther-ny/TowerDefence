@@ -1,5 +1,3 @@
-import java.awt.*;
-
 public class Enemy {
     private int step;
 
