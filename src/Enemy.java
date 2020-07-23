@@ -3,11 +3,12 @@ import bagel.Image;
 
 public class Enemy {
 
-    private final Image slicer = new Image("res/images/slicer.png");
+    private final Image slicer;
     private int step;
 
     public Enemy(int step){
         this.step = step;
+        this.slicer = new Image("res/images/slicer.png");
     }
 
     public int getStep() {
