@@ -8,13 +8,14 @@ import java.util.ArrayList;
 public class Game extends AbstractGame {
 
     private final int enemyNumber = 5;
+    private int timeDelay = 2000;
     private final Enemy []Enemy;
     private final ArrayList<Route> Path;
     private int activeNumber;
     private double spawnTime;
     private int timeScale;
 
-    private final TiledMap map = new TiledMap("res/levels/1.tmx");
+    private final TiledMap map = new TiledMap("res/levels/2.tmx");
     private final int FONT_SIZE = 48;
     private final Font conformableFont = new Font("res/fonts/conformable.otf", FONT_SIZE);
     private final DrawOptions fontColor = new DrawOptions().setBlendColour(0,0,0);
@@ -96,7 +97,7 @@ public class Game extends AbstractGame {
         if (Enemy[enemyNumber-1].getStep()<Path.size()) {
 
             spawnTime += (1/60.0) * 1000 * timeScale;
-            if (spawnTime>5000 && activeNumber!=enemyNumber){
+            if (spawnTime>timeDelay && activeNumber!=enemyNumber){
                 activeNumber++;
                 spawnTime = 0;
 
@@ -110,7 +111,7 @@ public class Game extends AbstractGame {
             }
             conformableFont.drawString("timescale:" + timeScale + "x", timeScaleLocation.x, timeScaleLocation.y, fontColor);
 
-            for (int i=0;i<activeNumber;i++) {
+            for (int i=activeNumber-1;i>=0;i--) {
                 if(Enemy[i].getStep()<Path.size()) {
                     
                     Enemy[i].draw(Path.get(Enemy[i].getStep()));
