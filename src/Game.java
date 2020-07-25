@@ -76,7 +76,7 @@ public class Game extends AbstractGame {
         timeScale = 1;
         Enemy = new Enemy[enemyNumber];
         for (int i=0;i<enemyNumber;i++){
-            Enemy[i] = new Enemy(0);
+            Enemy[i] = new Slicer(0);
         }
 
         Path = getWholeRoute(map);

@@ -1,14 +1,19 @@
 import bagel.DrawOptions;
 import bagel.Image;
 
-public class Enemy {
 
-    private final Image slicer;
+public abstract class Enemy {
+
+    private final Image enemy;
     private int step;
+    private boolean isExit;
+    private boolean isDead;
 
-    public Enemy(int step){
+    public Enemy(int step, String enemyImagePath){
+
         this.step = step;
-        this.slicer = new Image("res/images/slicer.png");
+        this.enemy = new Image(enemyImagePath);
+
     }
 
     public int getStep() {
@@ -19,8 +24,15 @@ public class Enemy {
         this.step = step;
     }
 
-    public void draw(Route route){
+    public boolean isDead() {
+        return isDead;
+    }
 
-        this.slicer.draw(route.getLocation().x, route.getLocation().y, new DrawOptions().setRotation(route.getRotation()));
+    public boolean isExit() {
+        return isExit;
+    }
+
+    public void draw(Route route){
+        this.enemy.draw(route.getLocation().x, route.getLocation().y, new DrawOptions().setRotation(route.getRotation()));
     }
 }
