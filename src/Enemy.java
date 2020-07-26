@@ -5,17 +5,20 @@ import bagel.Image;
 public abstract class Enemy {
 
     private final Image enemy;
-    private int step;
-    private boolean isExit;
-    private boolean isDead;
+    private int step = 0;
+    private int spawnDelay;
 
-    public Enemy(int step, String enemyImagePath){
+    public Enemy(int spawnDelay, String enemyImagePath){
 
-        this.step = step;
+        this.spawnDelay = spawnDelay;
         this.enemy = new Image(enemyImagePath);
 
     }
 
+    /**
+     *
+     * @return the index (step) of the enemy in the path array
+     */
     public int getStep() {
         return step;
     }
@@ -24,12 +27,12 @@ public abstract class Enemy {
         this.step = step;
     }
 
-    public boolean isDead() {
-        return isDead;
+    public int getSpawnDelay() {
+        return spawnDelay;
     }
 
-    public boolean isExit() {
-        return isExit;
+    public void setTimeDelay(int spawnDelay) {
+        this.spawnDelay = spawnDelay;
     }
 
     public void draw(Route route){
