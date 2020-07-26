@@ -17,13 +17,10 @@ public class Game extends AbstractGame {
     private int activeNumber;
     private double spawnTime;
     private double delayTime;
-    private int timeScale;
+    private int timeScale = 1;
 
-    private final TiledMap map = new TiledMap("res\\levels\\2.tmx");
-    private final int FONT_SIZE = 48;
-    private final Font conformableFont = new Font("res\\fonts\\conformable.otf", FONT_SIZE);
-    private final DrawOptions fontColor = new DrawOptions().setBlendColour(0,0,0);
-    private final Point timeScaleLocation = new Point(0.4*Window.getWidth(),0.95*Window.getHeight());
+    private final TiledMap map = new TiledMap("res\\levels\\1.tmx");
+    private final StatusPanel statusPanel = new StatusPanel();
 
     /**
      * Entry point for Alvin's TD game
@@ -31,8 +28,20 @@ public class Game extends AbstractGame {
      */
     public static void main(String[] args) {
         // Create new instance of game and run it
-        new Game().run();
+        Game game = new Game();
+        game.run();
     }
+
+    public int getTimeScale() {
+        return timeScale;
+    }
+
+    public void setTimeScale(int timeScale) {
+        this.timeScale = timeScale;
+    }
+
+    public void gameExit(){Window.close();System.exit(0);}
+
 
     /**
      *
@@ -57,7 +66,6 @@ public class Game extends AbstractGame {
         Point location = new Point(PolyPoints[0].x, PolyPoints[0].y);
 
         int i=0;
-
         while(i < polyPointNumber - 1){
 
             double x = PolyPoints[i + 1].x - PolyPoints[i].x, y = PolyPoints[i+1].y - PolyPoints[i].y;
@@ -102,7 +110,7 @@ public class Game extends AbstractGame {
                             )
                     );
 
-                }else{// add a delay wave
+                }else{  // add a delay wave
                     allWave.add( new Wave(
                             Integer.parseInt(line[0]), // Wave number
                             Integer.parseInt(line[2])  // Wave delay time
@@ -124,7 +132,6 @@ public class Game extends AbstractGame {
      */
     public Game(){
         // Constructor
-        timeScale = 15;
         Wave = getWaveInfo(waveFilePath);
         Path = getWholeRoute(map);
         waveNum = 0;
@@ -142,8 +149,8 @@ public class Game extends AbstractGame {
 
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
 
-        if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
+        if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
             ArrayList<Enemy> enemy = Wave.get(waveNum).getEnemy();
 
@@ -157,56 +164,38 @@ public class Game extends AbstractGame {
 
                     activeNumber++;
                     spawnTime = 0;
-
                 }
-
-                if (input.wasPressed(Keys.K) && timeScale-1>=0) {
-                    timeScale -= 1;
-                }
-                if (input.wasPressed(Keys.L)){
-                    timeScale += 1;
-                }
-                conformableFont.drawString("timescale:" + timeScale + "x", timeScaleLocation.x, timeScaleLocation.y, fontColor);
-
-
-                for (int i=0;i<activeNumber;i++) {
+                statusPanel.drawPanel(input, timeScale,-1,this);
+                for (int i=activeNumber-1;i>=0;i--) {
                     if((enemy.get(i)).getStep() < Path.size()) {
                         (enemy.get(i)).draw( Path.get( enemy.get(i).getStep() ) );
                         (enemy.get(i)).setStep(enemy.get(i).getStep()+timeScale);
                     }
                 }
 
-
             }else{
-
                 activeNumber = 0;
                 spawnTime = 0;
                 waveNum++;
-
             }
 
         }else{
 
             if (!(waveNum < Wave.size())){
                 // End game
-                Window.close();
+                gameExit();
             }else {
                 // Wait delay
-                double remain = Wave.get(waveNum).getWaveDelay() - delayTime;
-                conformableFont.drawString("timescale:" + timeScale + "x", timeScaleLocation.x, timeScaleLocation.y, fontColor);
-                conformableFont.drawString("Next wave comes in: " + (double) Math.round(remain / 100) / 10 + "seconds", timeScaleLocation.x + 200, timeScaleLocation.y, fontColor);
+                double delayRemain = Wave.get(waveNum).getWaveDelay() - delayTime;
+
                 delayTime += (1 / 60.0) * 1000 * timeScale;
-                if (delayTime > Wave.get(waveNum).getWaveDelay() || input.wasPressed(Keys.S)) {
+                if (delayRemain < 0 || input.wasPressed(Keys.S)) {
                     waveNum++;
                     delayTime = 0;
                 }
 
-                if (input.wasPressed(Keys.K) && timeScale - 1 >= 0) {
-                    timeScale -= 1;
-                }
-                if (input.wasPressed(Keys.L)) {
-                    timeScale += 1;
-                }
+                statusPanel.drawPanel(input, timeScale, delayRemain, this);
+
             }
 
         }
