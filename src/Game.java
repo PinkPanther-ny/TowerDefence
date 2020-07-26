@@ -10,13 +10,13 @@ import java.util.ArrayList;
 
 public class Game extends AbstractGame {
 
-    private ArrayList<Enemy> Enemy;
     private final ArrayList<Route> Path;
     private final ArrayList<Wave> Wave;
     private int waveNum;
-    private final String waveFilePath = "res\\levels\\waves.txt";
+    private final static String waveFilePath = "res\\levels\\waves.txt";
     private int activeNumber;
     private double spawnTime;
+    private double delayTime;
     private int timeScale;
 
     private final TiledMap map = new TiledMap("res\\levels\\2.tmx");
@@ -82,24 +82,32 @@ public class Game extends AbstractGame {
                      new BufferedReader(new FileReader(fileName))) {
 
             String text;
-            String []info;
+            String []line;
             EnemyFactory enemyFactory = new EnemyFactory();
 
             while ((text = br.readLine()) != null) {
 
-                info = text.split(",");
-                if (info.length==5) {
+                line = text.split(",");
+                if (line.length==5) {
 
                     ArrayList<Enemy> enemySubWave = enemyFactory.getEnemy(
-                            info[3],                        // Enemy name,
-                            Integer.parseInt(info[4]),      //Enemy spawn time delay
-                            Integer.parseInt(info[2])
+                            line[3],                        // Enemy name,
+                            Integer.parseInt(line[4]),      // Enemy spawn time delay,
+                            Integer.parseInt(line[2])       // Enemy number
                     );
 
-                    allWave.add( new Wave(Integer.parseInt(info[0]), enemySubWave) );
+                    allWave.add( new Wave(
+                            Integer.parseInt(line[0]), // Wave number
+                            enemySubWave               // Enemy array object
+                            )
+                    );
 
                 }else{// add a delay wave
-                    allWave.add( new Wave(Integer.parseInt(info[0]), Integer.parseInt(info[2])) );
+                    allWave.add( new Wave(
+                            Integer.parseInt(line[0]), // Wave number
+                            Integer.parseInt(line[2])  // Wave delay time
+                            )
+                    );
                 }
                 //Process each wave info line
             }
@@ -117,15 +125,12 @@ public class Game extends AbstractGame {
     public Game(){
         // Constructor
         timeScale = 15;
-        /*Enemy = new ArrayList<>(5);
-        for (int i=0;i<enemyNum;i++){
-            Enemy.add(new Slicer(timeDelay, enemyNum));
-        }*/
         Wave = getWaveInfo(waveFilePath);
         Path = getWholeRoute(map);
         waveNum = 0;
         activeNumber = 1;
         spawnTime = 0;
+        delayTime = 0;
     }
 
     /**
@@ -140,13 +145,12 @@ public class Game extends AbstractGame {
         if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
 
-            Enemy = Wave.get(waveNum).getEnemy();
+            ArrayList<Enemy> enemy = Wave.get(waveNum).getEnemy();
 
-            int enemyNum = Enemy.size();
-            double timeDelay = Enemy.get(0).getSpawnDelay();
-            System.out.println(activeNumber);
+            int enemyNum = enemy.size();
+            double timeDelay = enemy.get(0).getSpawnDelay();
 
-            if (Enemy.get(enemyNum-1).getStep() < Path.size()) {
+            if (enemy.get(enemyNum-1).getStep() < Path.size()) {
 
                 spawnTime += (1/60.0) * 1000 * timeScale;
                 if (spawnTime>timeDelay && activeNumber!=enemyNum){
@@ -166,10 +170,9 @@ public class Game extends AbstractGame {
 
 
                 for (int i=0;i<activeNumber;i++) {
-                    if((Enemy.get(i)).getStep() < Path.size()) {
-                        System.out.println(Enemy.get(i).getStep());
-                        (Enemy.get(i)).draw( Path.get( Enemy.get(i).getStep() ) );
-                        (Enemy.get(i)).setStep(Enemy.get(i).getStep()+timeScale);
+                    if((enemy.get(i)).getStep() < Path.size()) {
+                        (enemy.get(i)).draw( Path.get( enemy.get(i).getStep() ) );
+                        (enemy.get(i)).setStep(enemy.get(i).getStep()+timeScale);
                     }
                 }
 
@@ -180,6 +183,30 @@ public class Game extends AbstractGame {
                 spawnTime = 0;
                 waveNum++;
 
+            }
+
+        }else{
+
+            if (!(waveNum < Wave.size())){
+                // End game
+                Window.close();
+            }else {
+                // Wait delay
+                double remain = Wave.get(waveNum).getWaveDelay() - delayTime;
+                conformableFont.drawString("timescale:" + timeScale + "x", timeScaleLocation.x, timeScaleLocation.y, fontColor);
+                conformableFont.drawString("Next wave comes in: " + (double) Math.round(remain / 100) / 10 + "seconds", timeScaleLocation.x + 200, timeScaleLocation.y, fontColor);
+                delayTime += (1 / 60.0) * 1000 * timeScale;
+                if (delayTime > Wave.get(waveNum).getWaveDelay() || input.wasPressed(Keys.S)) {
+                    waveNum++;
+                    delayTime = 0;
+                }
+
+                if (input.wasPressed(Keys.K) && timeScale - 1 >= 0) {
+                    timeScale -= 1;
+                }
+                if (input.wasPressed(Keys.L)) {
+                    timeScale += 1;
+                }
             }
 
         }
