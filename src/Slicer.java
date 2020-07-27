@@ -8,5 +8,6 @@ public class Slicer extends Enemy{
      */
     public Slicer(int spawnDelay) {
         super(spawnDelay, slicerImagePath);
+        setSpeed(2);
     }
 }

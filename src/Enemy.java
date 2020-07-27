@@ -5,8 +5,9 @@ import bagel.Image;
 public abstract class Enemy {
 
     private final Image enemy;
-    private int step = 0;
+    private double step = 0;
     private int spawnDelay;
+    private double speed;
 
     public Enemy(int spawnDelay, String enemyImagePath){
 
@@ -19,13 +20,17 @@ public abstract class Enemy {
      *
      * @return the index (step) of the enemy in the path array
      */
-    public int getStep() {
+    public double getStep() {
         return step;
     }
 
-    public void setStep(int step) {
+    public void setStep(double step) {
         this.step = step;
     }
+
+    public double getSpeed() { return speed; }
+
+    public void setSpeed(double speed) { this.speed = speed; }
 
     public int getSpawnDelay() {
         return spawnDelay;

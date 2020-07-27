@@ -39,6 +39,14 @@ public class EnemyFactory {
             }
             return Apexslicer;
         }
+
+        if(enemyType.equalsIgnoreCase("ZOMBIE")) {
+            ArrayList<Enemy> Zombie = new ArrayList<>();
+            for (int i = 0; i < enemyNum; i++) {
+                Zombie.add(new Zombie(spawnDelay));
+            }
+            return Zombie;
+        }
         return null;
     }
 }

@@ -8,5 +8,6 @@ public class Superslicer extends Enemy{
      */
     public Superslicer(int spawnDelay) {
         super(spawnDelay, slicerImagePath);
+        setSpeed(2*3/4.0);
     }
 }

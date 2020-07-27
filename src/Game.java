@@ -19,7 +19,7 @@ public class Game extends AbstractGame {
     private double delayTime;
     private int timeScale = 1;
 
-    private final TiledMap map = new TiledMap("res\\levels\\1.tmx");
+    private final TiledMap map = new TiledMap("res\\levels\\2.tmx");
     private final StatusPanel statusPanel = new StatusPanel();
 
     /**
@@ -149,10 +149,10 @@ public class Game extends AbstractGame {
 
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
 
-
         if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
-            ArrayList<Enemy> enemy = Wave.get(waveNum).getEnemy();
+            ArrayList<Enemy> enemy;
+            enemy = Wave.get(waveNum).getEnemy();
 
             int enemyNum = enemy.size();
             double timeDelay = enemy.get(0).getSpawnDelay();
@@ -161,18 +161,17 @@ public class Game extends AbstractGame {
 
                 spawnTime += (1/60.0) * 1000 * timeScale;
                 if (spawnTime>timeDelay && activeNumber!=enemyNum){
-
                     activeNumber++;
                     spawnTime = 0;
                 }
-                statusPanel.drawPanel(input, timeScale,-1,this);
+
                 for (int i=activeNumber-1;i>=0;i--) {
                     if((enemy.get(i)).getStep() < Path.size()) {
-                        (enemy.get(i)).draw( Path.get( enemy.get(i).getStep() ) );
-                        (enemy.get(i)).setStep(enemy.get(i).getStep()+timeScale);
+                        (enemy.get(i)).draw( Path.get( (int)Math.round(enemy.get(i).getStep()) ) );
+                        (enemy.get(i)).setStep(enemy.get(i).getStep()+timeScale*enemy.get(i).getSpeed());
                     }
                 }
-
+                statusPanel.drawPanel(input, timeScale,-1,this);
             }else{
                 activeNumber = 0;
                 spawnTime = 0;
