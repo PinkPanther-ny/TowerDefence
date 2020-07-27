@@ -12,6 +12,7 @@ public class Game extends AbstractGame {
 
     private final ArrayList<Route> Path;
     private final ArrayList<Wave> Wave;
+    private ArrayList<Tower> Towers;
     private int waveNum;
     private final static String waveFilePath = "res\\levels\\waves.txt";
     private int activeNumber;
@@ -19,7 +20,8 @@ public class Game extends AbstractGame {
     private double delayTime;
     private int timeScale = 1;
 
-    private final TiledMap map = new TiledMap("res\\levels\\2.tmx");
+    private final TiledMap map = new TiledMap("res\\levels\\1.tmx");
+    private static final String BLOCKED_PROPERTY = "blocked";
     private final StatusPanel statusPanel = new StatusPanel();
 
     /**
@@ -126,7 +128,6 @@ public class Game extends AbstractGame {
         return allWave;
     }
 
-
     /**
      * Setup the game
      */
@@ -138,6 +139,22 @@ public class Game extends AbstractGame {
         activeNumber = 1;
         spawnTime = 0;
         delayTime = 0;
+        Towers = new ArrayList<>();
+    }
+    public ArrayList<Tower> getTowers(){
+        return this.Towers;
+    }
+
+    public void setTowers(Tower towers) {
+        Towers.add(towers);
+    }
+
+    public TiledMap getMap() {
+        return map;
+    }
+
+    public String getBlockedProperty() {
+        return BLOCKED_PROPERTY;
     }
 
     /**
@@ -198,6 +215,8 @@ public class Game extends AbstractGame {
             }
 
         }
+
+
 
     }
 }

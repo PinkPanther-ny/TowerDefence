@@ -8,7 +8,6 @@ public class Zombie extends Enemy{
      */
 
     public Zombie(int spawnDelay) {
-
         super(spawnDelay, slicerImagePath);
         setSpeed(1);
     }
