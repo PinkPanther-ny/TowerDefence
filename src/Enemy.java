@@ -1,7 +1,6 @@
 import bagel.DrawOptions;
 import bagel.Image;
 
-
 public abstract class Enemy {
 
     private final Image enemy;
@@ -13,8 +12,8 @@ public abstract class Enemy {
 
         this.spawnDelay = spawnDelay;
         this.enemy = new Image(enemyImagePath);
-
     }
+
 
     /**
      *

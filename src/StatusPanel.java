@@ -16,6 +16,9 @@ public class StatusPanel {
 
     private final static int FONT_SIZE = 16;
     private final static Font panelFont = new Font("res\\fonts\\DejaVuSans-Bold.ttf", FONT_SIZE);
+
+    private final static int INS_SIZE = 14;
+    private final static Font insFont = new Font("res\\fonts\\DejaVuSans-Bold.ttf", INS_SIZE);
     private final static DrawOptions black = new DrawOptions().setBlendColour(Colour.BLACK);
     private final static DrawOptions red = new DrawOptions().setBlendColour(Colour.RED);
     private final static DrawOptions green = new DrawOptions().setBlendColour(0.1328,0.5429,0.1328);
@@ -40,6 +43,15 @@ public class StatusPanel {
     private final static Point SP_Location1 = new Point(36,10);
     private final static Point SP_Location2 = new Point(176,10);
     private final static Point SP_Location3 = new Point(316,10);
+
+    private final static String instruction1 = "Press K/L to speed up / down the game";
+    private final static String instruction2 = "Press N to set the timescale to Normal 1x";
+    private final static String instruction3 = "Press P to pause / continue the game";
+    private final static String instruction4 = "Press S to skip delay time between waves";
+    private final static Point INS_Location1 = new Point(560,20);
+    private final static Point INS_Location2 = new Point(560,40);
+    private final static Point INS_Location3 = new Point(560,60);
+    private final static Point INS_Location4 = new Point(560,80);
 
 
     private final static Rectangle SP_1 = shopTank.getBoundingBoxAt(new Point(
@@ -116,12 +128,21 @@ public class StatusPanel {
 
     public void drawShop(Input input, Game game){
 
+        int alignToGrid = 16;
+        Point mouse = input.getMousePosition();
+        Point alignPoint = new Point(alignToGrid *(int)(mouse.x/ alignToGrid), alignToGrid *(int)(mouse.y/ alignToGrid));
+
         shopPanel.drawFromTopLeft(SPP_Location.x, SPP_Location.y);
         shopTank.drawFromTopLeft(SP_Location1.x, SP_Location1.y);
         shopSuperTank.drawFromTopLeft(SP_Location2.x, SP_Location2.y);
         shopAirSupport.drawFromTopLeft(SP_Location3.x, SP_Location3.y);
 
-        Point mouse = input.getMousePosition();
+        insFont.drawString(instruction1,INS_Location1.x, INS_Location1.y);
+        insFont.drawString(instruction2,INS_Location2.x, INS_Location2.y);
+        insFont.drawString(instruction3,INS_Location3.x, INS_Location3.y);
+        insFont.drawString(instruction4,INS_Location4.x, INS_Location4.y);
+
+
         ArrayList<Tower> tower = game.getTowers();
 
         if(input.wasReleased(MouseButtons.LEFT)) {
@@ -131,20 +152,23 @@ public class StatusPanel {
             } else {
 
                 Tower currentTower = tower.get(tower.size() - 1);
-                if(validRectangle(currentTower, mouse, game.getMap(), game.getBlockedProperty())) {
-                    if (!currentTower.isPlacing()) {
-                        addNewTower(mouse, game);
+                if (!currentTower.isPlacing()) {
+                    // Not isPlacing status, so add a new Tower to the list
+                    addNewTower(mouse, game);
 
-                    } else if (currentTower.isPlacing()) {
+                } else if (validRectangleOnMap(currentTower, mouse, game.getMap(), game.getBlockedProperty(), tower) && currentTower.isPlacing()) {
+                    //  IsPlacing status, mouse is clicked, and position valid, so set it down.
+                    currentTower.setPlacing(false);
 
-                        currentTower.setPlacing(false);
-                        currentTower.setLocation(mouse);
-                    }
+                    // currentTower.setLocation(mouse);
+
+                    currentTower.setLocation(alignPoint);
                 }
+
             }
         }
-        drawTower(mouse, game.getTowers(), game.getMap(), game.getBlockedProperty());
-
+        drawTower(alignPoint, game.getTowers(), game.getMap(), game.getBlockedProperty(), input);
+        //drawTower(mouse, game.getTowers(), game.getMap(), game.getBlockedProperty(), input);
 
     }
 
@@ -161,29 +185,38 @@ public class StatusPanel {
 
     }
 
+    public void drawTower(Point mouse, ArrayList<Tower> Towers, TiledMap map, String BLOCKED_PROPERTY, Input input){
 
-    public void drawTower(Point mouse, ArrayList<Tower> Towers, TiledMap map, String BLOCKED_PROPERTY){
         DrawOptions drawOptions;
+        boolean cancelPlacing = false;
         for(Tower aTower: Towers){
             if (!aTower.isPlacing()){
+                // debug draw the collider
+                // Drawing.drawRectangle(aTower.getLocation(), aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
                 aTower.drawTower(aTower.getLocation(), new DrawOptions().setRotation(aTower.getRotation()));
             }else if(aTower.isPlacing()){
+                if(input.wasReleased(MouseButtons.RIGHT)){cancelPlacing = true;continue;}
 
-                if (validRectangle(aTower, mouse, map, BLOCKED_PROPERTY)) {
+                if (validRectangleOnMap(aTower, mouse, map, BLOCKED_PROPERTY, Towers)) {
                     // Valid Location
-                    drawOptions = new DrawOptions().setBlendColour(1,1,1,0.6);
+                    drawOptions = new DrawOptions().setBlendColour(1,1,1,0.45);
                 }else{
                     // Cannot place tower
-                    drawOptions = new DrawOptions().setBlendColour(1,0.3,0.3,0.6);
+                    drawOptions = new DrawOptions().setBlendColour(1,0.15,0.15,0.45);
                 }
+                // debug draw the collider
+                // Drawing.drawRectangle(mouse, aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
                 aTower.drawTower(mouse, drawOptions);
             }
+        }
+        if (cancelPlacing){
+            Towers.remove(Towers.size() - 1);
         }
     }
 
     private boolean validPoint(Point point, TiledMap map, String BLOCKED_PROPERTY) {
-        boolean invalidX = point.x < 0 || point.x > Window.getWidth();
-        boolean invalidY = point.y < 0 || point.y > Window.getHeight();
+        boolean invalidX = point.x <= 0 || point.x >= Window.getWidth();
+        boolean invalidY = point.y <= 0 || point.y >= Window.getHeight();
         boolean outOfBounds = invalidX || invalidY;
         if (outOfBounds) {
             return false;
@@ -193,21 +226,55 @@ public class StatusPanel {
 
 
     /**
-     *  Check five point of a Tower
+     *  Check conner and centre of a Tower
      *  Four conner and the centre
      * @param tower The tower object that will be validated
      * @param mouse Current mouse position
      * @param BLOCKED_PROPERTY  tile customised property
      * @return boolean If the given Tower's location is valid on the map
      */
-    private boolean validRectangle(Tower tower, Point mouse, TiledMap map, String BLOCKED_PROPERTY){
+    private boolean validRectangleOnMap(Tower tower, Point mouse, TiledMap map, String BLOCKED_PROPERTY, ArrayList<Tower> Towers){
+
         tower.setCollider(mouse);
         Rectangle newBoundingBox = tower.getCollider();
-        boolean validBR = validPoint(newBoundingBox.bottomRight(), map, BLOCKED_PROPERTY);
-        boolean validTR = validPoint(newBoundingBox.topRight(), map, BLOCKED_PROPERTY);
-        boolean validTL = validPoint(newBoundingBox.topLeft(), map, BLOCKED_PROPERTY);
-        boolean validBL = validPoint(newBoundingBox.bottomLeft(), map, BLOCKED_PROPERTY);
-        boolean validMS = validPoint(mouse, map, BLOCKED_PROPERTY);
-        return validBL && validBR && validTL && validTR && validMS;
+        try {
+            boolean validBR = validPoint(newBoundingBox.bottomRight(), map, BLOCKED_PROPERTY);
+            boolean validTR = validPoint(newBoundingBox.topRight(), map, BLOCKED_PROPERTY);
+            boolean validTL = validPoint(newBoundingBox.topLeft(), map, BLOCKED_PROPERTY);
+            boolean validBL = validPoint(newBoundingBox.bottomLeft(), map, BLOCKED_PROPERTY);
+            boolean validCT = validPoint(newBoundingBox.centre(), map, BLOCKED_PROPERTY);
+
+            boolean validHBR = validPoint(getMidPoint(newBoundingBox.bottomRight(),newBoundingBox.centre()), map, BLOCKED_PROPERTY);
+            boolean validHTR = validPoint(getMidPoint(newBoundingBox.topRight(),newBoundingBox.centre()), map, BLOCKED_PROPERTY);
+            boolean validHTL = validPoint(getMidPoint(newBoundingBox.topLeft(),newBoundingBox.centre()), map, BLOCKED_PROPERTY);
+            boolean validHBL = validPoint(getMidPoint(newBoundingBox.bottomLeft(),newBoundingBox.centre()), map, BLOCKED_PROPERTY);
+            /*
+            // debug thing
+            System.out.println();
+            System.out.println(newBoundingBox.bottomRight() + "," + !map.getPropertyBoolean((int) newBoundingBox.bottomRight().x, (int) newBoundingBox.bottomRight().y, BLOCKED_PROPERTY, false));
+            System.out.println(newBoundingBox.topRight() + "," + !map.getPropertyBoolean((int) newBoundingBox.topRight().x, (int) newBoundingBox.topRight().y, BLOCKED_PROPERTY, false));
+            System.out.println(newBoundingBox.topLeft() + "," + !map.getPropertyBoolean((int) newBoundingBox.topLeft().x, (int) newBoundingBox.topLeft().y, BLOCKED_PROPERTY, false));
+            System.out.println(newBoundingBox.bottomLeft() + "," + !map.getPropertyBoolean((int) newBoundingBox.bottomLeft().x, (int) newBoundingBox.bottomLeft().y, BLOCKED_PROPERTY, false));
+            */
+            return validBL && validBR && validTL && validTR && validCT && validHBR && validHTR && validHTL && validHBL &&
+                    validRectangleCollider(tower, Towers);
+        }catch(Exception NullPointerException){return false;}
+
     }
+
+    private boolean validRectangleCollider(Tower tower, ArrayList<Tower> Towers){
+        Rectangle currentBoundingBox = tower.getCollider();
+
+        for(Tower anotherTower:Towers) {
+            if (anotherTower.getCollider().intersects(currentBoundingBox) && !tower.equals(anotherTower)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Point getMidPoint(Point p1, Point p2){
+        return new Point((p1.x+p2.x)/2.0, (p1.y+p2.y)/2.0);
+    }
+
 }

@@ -12,7 +12,7 @@ public class Game extends AbstractGame {
 
     private final ArrayList<Route> Path;
     private final ArrayList<Wave> Wave;
-    private ArrayList<Tower> Towers;
+    private final ArrayList<Tower> Towers;
     private int waveNum;
     private final static String waveFilePath = "res\\levels\\waves.txt";
     private int activeNumber;
@@ -20,7 +20,7 @@ public class Game extends AbstractGame {
     private double delayTime;
     private int timeScale = 1;
 
-    private final TiledMap map = new TiledMap("res\\levels\\1.tmx");
+    private final TiledMap map = new TiledMap("res\\levels\\2.tmx");
     private static final String BLOCKED_PROPERTY = "blocked";
     private final StatusPanel statusPanel = new StatusPanel();
 
@@ -165,7 +165,6 @@ public class Game extends AbstractGame {
     protected void update(Input input) {
 
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
-
         if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
             ArrayList<Enemy> enemy;
@@ -184,7 +183,7 @@ public class Game extends AbstractGame {
 
                 for (int i=activeNumber-1;i>=0;i--) {
                     if((enemy.get(i)).getStep() < Path.size()) {
-                        (enemy.get(i)).draw( Path.get( (int)Math.round(enemy.get(i).getStep()) ) );
+                        (enemy.get(i)).draw( Path.get( (int)enemy.get(i).getStep()) );
                         (enemy.get(i)).setStep(enemy.get(i).getStep()+timeScale*enemy.get(i).getSpeed());
                     }
                 }

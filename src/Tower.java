@@ -16,6 +16,7 @@ public class Tower {
     private boolean isPlacing;
 
     private Rectangle collider;
+    private double detectRadius;
 
     public Tower(String towerImagePath, double coolDown){
 
@@ -24,7 +25,8 @@ public class Tower {
         this.rotation = 0;
         this.location = new Point(100,100);
         this.isPlacing = true;
-        this.collider = this.towerImage.getBoundingBox();
+        //this.collider = this.towerImage.getBoundingBox();
+        this.collider = new Rectangle(new Point(0,0), 10,10);
     }
 
     public double getRotation() {
@@ -52,20 +54,21 @@ public class Tower {
     }
 
     public void setCollider(Point point) {
+        // Default set to centre point, but I need top-left point
         this.collider = this.towerImage.getBoundingBoxAt(new Point(
-                point.x,
-                point.y)
+                point.x+this.towerImage.getWidth()*0.5,
+                point.y+this.towerImage.getHeight()*0.5)
         );
     }
 
     public void drawTower(Point location){
         setCollider(location);
-        this.towerImage.draw(location.x, location.y);
+        this.towerImage.drawFromTopLeft(location.x, location.y);
 
     }
     public void drawTower(Point location, DrawOptions drawOptions){
         setCollider(location);
-        this.towerImage.draw(location.x, location.y, drawOptions);
+        this.towerImage.drawFromTopLeft(location.x, location.y, drawOptions);
 
     }
 
