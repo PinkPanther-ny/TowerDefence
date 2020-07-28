@@ -11,19 +11,20 @@ public class Tower {
     private double coolDown;
 
     private double rotation;
-    private Point location;
+    private Point TL_location;
 
     private boolean isPlacing;
 
     private Rectangle collider;
-    private double detectRadius;
+    private double radius;
 
-    public Tower(String towerImagePath, double coolDown){
+    public Tower(String towerImagePath, double coolDown, double radius){
 
         this.towerImage = new Image(towerImagePath);
         this.coolDown = coolDown;
         this.rotation = 0;
-        this.location = new Point(100,100);
+        this.radius = radius;
+        this.TL_location = new Point(100,100);
         this.isPlacing = true;
         //this.collider = this.towerImage.getBoundingBox();
         this.collider = new Rectangle(new Point(0,0), 10,10);
@@ -38,11 +39,11 @@ public class Tower {
     }
 
     public Point getLocation() {
-        return location;
+        return TL_location;
     }
 
-    public void setLocation(Point location) {
-        this.location = location;
+    public void setLocation(Point TL_location) {
+        this.TL_location = TL_location;
     }
 
     public void setPlacing(boolean placing) {
@@ -61,18 +62,22 @@ public class Tower {
         );
     }
 
-    public void drawTower(Point location){
-        setCollider(location);
-        this.towerImage.drawFromTopLeft(location.x, location.y);
+    public void drawTower(Point TL_location){
+        setCollider(TL_location);
+        this.towerImage.drawFromTopLeft(TL_location.x, TL_location.y);
 
     }
-    public void drawTower(Point location, DrawOptions drawOptions){
-        setCollider(location);
-        this.towerImage.drawFromTopLeft(location.x, location.y, drawOptions);
+    public void drawTower(Point TL_location, DrawOptions drawOptions){
+        setCollider(TL_location);
+        this.towerImage.drawFromTopLeft(TL_location.x, TL_location.y, drawOptions);
 
     }
 
     public Rectangle getCollider() {
         return collider;
+    }
+
+    public double getRadius() {
+        return radius;
     }
 }

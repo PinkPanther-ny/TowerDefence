@@ -13,6 +13,7 @@ public class Game extends AbstractGame {
     private final ArrayList<Route> Path;
     private final ArrayList<Wave> Wave;
     private final ArrayList<Tower> Towers;
+    private ArrayList<Enemy> enemy;
     private int waveNum;
     private final static String waveFilePath = "res\\levels\\waves.txt";
     private int activeNumber;
@@ -140,13 +141,22 @@ public class Game extends AbstractGame {
         spawnTime = 0;
         delayTime = 0;
         Towers = new ArrayList<>();
+        enemy = new ArrayList<>();
     }
     public ArrayList<Tower> getTowers(){
         return this.Towers;
     }
 
+    public ArrayList<Enemy> getEnemy() {
+        return enemy;
+    }
+
     public void setTowers(Tower towers) {
         Towers.add(towers);
+    }
+
+    public ArrayList<Route> getPath() {
+        return Path;
     }
 
     public TiledMap getMap() {
@@ -167,7 +177,7 @@ public class Game extends AbstractGame {
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
         if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
-            ArrayList<Enemy> enemy;
+
             enemy = Wave.get(waveNum).getEnemy();
 
             int enemyNum = enemy.size();

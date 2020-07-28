@@ -9,6 +9,7 @@ import bagel.util.Rectangle;
 
 import java.util.ArrayList;
 
+
 public class StatusPanel {
 
     private final Point timeScaleLocation = new Point(200, 752);
@@ -44,7 +45,7 @@ public class StatusPanel {
     private final static Point SP_Location2 = new Point(176,10);
     private final static Point SP_Location3 = new Point(316,10);
 
-    private final static String instruction1 = "Press K/L to speed up / down the game";
+    private final static String instruction1 = "Press L/K to speed up / down the game";
     private final static String instruction2 = "Press N to set the timescale to Normal 1x";
     private final static String instruction3 = "Press P to pause / continue the game";
     private final static String instruction4 = "Press S to skip delay time between waves";
@@ -73,10 +74,22 @@ public class StatusPanel {
         Rectangle PS_Rect = pauseSign.getBoundingBoxAt(new Point(PS_Location.x + pauseSign.getWidth()*0.5, PS_Location.y + pauseSign.getHeight()*0.55));
         Rectangle FFS_Rect = fastforwardSign.getBoundingBoxAt(new Point(FFS_Location.x + fastforwardSign.getWidth()*0.5, FFS_Location.y + fastforwardSign.getHeight()*0.5));
         Rectangle FBS_Rect = fastbackwardSign.getBoundingBoxAt(new Point(FBS_Location.x + fastbackwardSign.getWidth()*0.5, FBS_Location.y + fastbackwardSign.getHeight()*0.5));
+        
+        shopPanel.drawFromTopLeft(SPP_Location.x, SPP_Location.y);
+        shopTank.drawFromTopLeft(SP_Location1.x, SP_Location1.y);
+        shopSuperTank.drawFromTopLeft(SP_Location2.x, SP_Location2.y);
+        shopAirSupport.drawFromTopLeft(SP_Location3.x, SP_Location3.y);
 
-        drawShop(input, game);
+        insFont.drawString(instruction1,INS_Location1.x, INS_Location1.y);
+        insFont.drawString(instruction2,INS_Location2.x, INS_Location2.y);
+        insFont.drawString(instruction3,INS_Location3.x, INS_Location3.y);
+        insFont.drawString(instruction4,INS_Location4.x, INS_Location4.y);
+        
         fastbackwardSign.drawFromTopLeft(FBS_Location.x, FBS_Location.y);
         fastforwardSign.drawFromTopLeft(FFS_Location.x, FFS_Location.y);
+
+        placingTower(input, game);
+        
         if (input.wasPressed(Keys.N)) {
             game.setTimeScale(1);  // Normal speed
             pauseTimeScale = -1;
@@ -126,22 +139,11 @@ public class StatusPanel {
         }
     }
 
-    public void drawShop(Input input, Game game){
+    public void placingTower(Input input, Game game){
 
         int alignToGrid = 16;
         Point mouse = input.getMousePosition();
         Point alignPoint = new Point(alignToGrid *(int)(mouse.x/ alignToGrid), alignToGrid *(int)(mouse.y/ alignToGrid));
-
-        shopPanel.drawFromTopLeft(SPP_Location.x, SPP_Location.y);
-        shopTank.drawFromTopLeft(SP_Location1.x, SP_Location1.y);
-        shopSuperTank.drawFromTopLeft(SP_Location2.x, SP_Location2.y);
-        shopAirSupport.drawFromTopLeft(SP_Location3.x, SP_Location3.y);
-
-        insFont.drawString(instruction1,INS_Location1.x, INS_Location1.y);
-        insFont.drawString(instruction2,INS_Location2.x, INS_Location2.y);
-        insFont.drawString(instruction3,INS_Location3.x, INS_Location3.y);
-        insFont.drawString(instruction4,INS_Location4.x, INS_Location4.y);
-
 
         ArrayList<Tower> tower = game.getTowers();
 
@@ -156,22 +158,22 @@ public class StatusPanel {
                     // Not isPlacing status, so add a new Tower to the list
                     addNewTower(mouse, game);
 
-                } else if (validRectangleOnMap(currentTower, mouse, game.getMap(), game.getBlockedProperty(), tower) && currentTower.isPlacing()) {
+                } else if (validRectangleOnMap(currentTower, mouse, game.getMap(), game.getBlockedProperty(), tower) &&
+                        currentTower.isPlacing()) {
                     //  IsPlacing status, mouse is clicked, and position valid, so set it down.
                     currentTower.setPlacing(false);
 
                     // currentTower.setLocation(mouse);
-
+                    /*                      ADD ROTATION DETECTION                */
                     currentTower.setLocation(alignPoint);
                 }
 
             }
         }
-        drawTower(alignPoint, game.getTowers(), game.getMap(), game.getBlockedProperty(), input);
+        drawTower(alignPoint, game.getTowers(), game.getMap(), game.getBlockedProperty(), input, game);
         //drawTower(mouse, game.getTowers(), game.getMap(), game.getBlockedProperty(), input);
 
     }
-
     public void addNewTower(Point mouse, Game game){
         if (SP_1.intersects(mouse)) {
             game.setTowers(new Tank());
@@ -184,8 +186,7 @@ public class StatusPanel {
         }
 
     }
-
-    public void drawTower(Point mouse, ArrayList<Tower> Towers, TiledMap map, String BLOCKED_PROPERTY, Input input){
+    public void drawTower(Point mouse, ArrayList<Tower> Towers, TiledMap map, String BLOCKED_PROPERTY, Input input, Game game){
 
         DrawOptions drawOptions;
         boolean cancelPlacing = false;
@@ -193,19 +194,25 @@ public class StatusPanel {
             if (!aTower.isPlacing()){
                 // debug draw the collider
                 // Drawing.drawRectangle(aTower.getLocation(), aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
+
+                double rotation = getAngle(aTower, game.getEnemy(), game.getPath());
+                aTower.setRotation(rotation);
                 aTower.drawTower(aTower.getLocation(), new DrawOptions().setRotation(aTower.getRotation()));
             }else if(aTower.isPlacing()){
                 if(input.wasReleased(MouseButtons.RIGHT)){cancelPlacing = true;continue;}
 
                 if (validRectangleOnMap(aTower, mouse, map, BLOCKED_PROPERTY, Towers)) {
                     // Valid Location
+                    Drawing.drawCircle(aTower.getCollider().centre(), aTower.getRadius(), new Colour(0.1328,0.5429,0.1328, 0.5));
                     drawOptions = new DrawOptions().setBlendColour(1,1,1,0.45);
                 }else{
                     // Cannot place tower
+                    Drawing.drawCircle(aTower.getCollider().centre(), aTower.getRadius(), new Colour(0.5429,0.1328,0.1328, 0.5));
                     drawOptions = new DrawOptions().setBlendColour(1,0.15,0.15,0.45);
                 }
                 // debug draw the collider
                 // Drawing.drawRectangle(mouse, aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
+
                 aTower.drawTower(mouse, drawOptions);
             }
         }
@@ -223,11 +230,8 @@ public class StatusPanel {
         }
         return !map.getPropertyBoolean((int) point.x, (int) point.y, BLOCKED_PROPERTY, false);
     }
-
-
     /**
      *  Check conner and centre of a Tower
-     *  Four conner and the centre
      * @param tower The tower object that will be validated
      * @param mouse Current mouse position
      * @param BLOCKED_PROPERTY  tile customised property
@@ -261,7 +265,6 @@ public class StatusPanel {
         }catch(Exception NullPointerException){return false;}
 
     }
-
     private boolean validRectangleCollider(Tower tower, ArrayList<Tower> Towers){
         Rectangle currentBoundingBox = tower.getCollider();
 
@@ -272,9 +275,32 @@ public class StatusPanel {
         }
         return true;
     }
-
     private Point getMidPoint(Point p1, Point p2){
         return new Point((p1.x+p2.x)/2.0, (p1.y+p2.y)/2.0);
+    }
+
+    private double getAngle(Tower tower, ArrayList<Enemy> enemies, ArrayList<Route> Path){
+        double rotationAngle = 2*Math.PI;
+        double x, y;
+        Point p1 = tower.getCollider().centre();
+        Point p2;
+        int maxStep=0;
+        for(Enemy enemy: enemies){
+            if((int) enemy.getStep()<Path.size()) {
+
+                if (Path.get((int) enemy.getStep()).getLocation().distanceTo(tower.getLocation()) <= tower.getRadius()) {
+                    p2 = Path.get((int) enemy.getStep()).getLocation();
+                    x = p2.x - p1.x;
+                    y = p2.y - p1.y;
+
+                    if ((int) enemy.getStep() > maxStep) {
+                        maxStep = (int) enemy.getStep();
+                        rotationAngle = -Math.atan2(-y, x) + Math.PI / 2;
+                    }
+                }
+            }
+        }
+        return rotationAngle == 2*Math.PI?tower.getRotation():rotationAngle;
     }
 
 }
