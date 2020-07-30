@@ -1,6 +1,8 @@
+import bagel.Image;
+
 public class Apexslicer extends Enemy{
 
-    private static String slicerImagePath = "res\\images\\apexslicer.png";
+    private static final Image apexSlicerImage = new Image("res\\images\\apexslicer.png");
 
     /**
      * Constructor for Apexslicer
@@ -8,7 +10,7 @@ public class Apexslicer extends Enemy{
      */
 
     public Apexslicer(int spawnDelay) {
-        super(spawnDelay, slicerImagePath);
+        super(spawnDelay, apexSlicerImage);
         setSpeed(3/4.0);
     }
 }

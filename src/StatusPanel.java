@@ -1,14 +1,10 @@
-import bagel.DrawOptions;
-import bagel.Font;
-import bagel.Keys;
+import bagel.*;
 import bagel.map.TiledMap;
 import bagel.util.Colour;
 import bagel.util.Point;
-import bagel.*;
 import bagel.util.Rectangle;
-
 import java.util.ArrayList;
-
+import java.util.Scanner;
 
 public class StatusPanel {
 
@@ -53,7 +49,7 @@ public class StatusPanel {
     private final static Point INS_Location2 = new Point(560,40);
     private final static Point INS_Location3 = new Point(560,60);
     private final static Point INS_Location4 = new Point(560,80);
-
+    private final static Point INS_Location5 = new Point(752,700);
 
     private final static Rectangle SP_1 = shopTank.getBoundingBoxAt(new Point(
             SP_Location1.x + 0.5*shopTank.getWidth(),
@@ -84,12 +80,17 @@ public class StatusPanel {
         insFont.drawString(instruction2,INS_Location2.x, INS_Location2.y);
         insFont.drawString(instruction3,INS_Location3.x, INS_Location3.y);
         insFont.drawString(instruction4,INS_Location4.x, INS_Location4.y);
-        
+
+        insFont.drawString("Health : " + game.getHealth(), INS_Location5.x, INS_Location5.y);
+
         fastbackwardSign.drawFromTopLeft(FBS_Location.x, FBS_Location.y);
         fastforwardSign.drawFromTopLeft(FFS_Location.x, FFS_Location.y);
 
+
+
         placingTower(input, game);
-        
+        drawProjectile(game);
+
         if (input.wasPressed(Keys.N)) {
             game.setTimeScale(1);  // Normal speed
             pauseTimeScale = -1;
@@ -155,16 +156,15 @@ public class StatusPanel {
 
                 Tower currentTower = tower.get(tower.size() - 1);
                 if (!currentTower.isPlacing()) {
+
                     // Not isPlacing status, so add a new Tower to the list
                     addNewTower(mouse, game);
 
                 } else if (validRectangleOnMap(currentTower, mouse, game.getMap(), game.getBlockedProperty(), tower) &&
                         currentTower.isPlacing()) {
+
                     //  IsPlacing status, mouse is clicked, and position valid, so set it down.
                     currentTower.setPlacing(false);
-
-                    // currentTower.setLocation(mouse);
-                    /*                      ADD ROTATION DETECTION                */
                     currentTower.setLocation(alignPoint);
                 }
 
@@ -195,10 +195,19 @@ public class StatusPanel {
                 // debug draw the collider
                 // Drawing.drawRectangle(aTower.getLocation(), aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
 
+                // Draw tower and search if enemy inside the shooting radius and rotate tower towards the leading enemy in the path
+
                 double rotation = getAngle(aTower, game.getEnemy(), game.getPath());
                 aTower.setRotation(rotation);
                 aTower.drawTower(aTower.getLocation(), new DrawOptions().setRotation(aTower.getRotation()));
+
+                /* Add shooting projectile */
+                shootEnemy(aTower, game.getEnemy(), game.getPath(), game.getTimeScale(), game);
+
+
+
             }else if(aTower.isPlacing()){
+
                 if(input.wasReleased(MouseButtons.RIGHT)){cancelPlacing = true;continue;}
 
                 if (validRectangleOnMap(aTower, mouse, map, BLOCKED_PROPERTY, Towers)) {
@@ -211,7 +220,7 @@ public class StatusPanel {
                     drawOptions = new DrawOptions().setBlendColour(1,0.15,0.15,0.45);
                 }
                 // debug draw the collider
-                // Drawing.drawRectangle(mouse, aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
+                 // Drawing.drawRectangle(mouse, aTower.getCollider().right()-aTower.getCollider().left(),aTower.getCollider().bottom()-aTower.getCollider().top(),Colour.BLACK);
 
                 aTower.drawTower(mouse, drawOptions);
             }
@@ -298,9 +307,119 @@ public class StatusPanel {
                         rotationAngle = -Math.atan2(-y, x) + Math.PI / 2;
                     }
                 }
+
             }
         }
         return rotationAngle == 2*Math.PI?tower.getRotation():rotationAngle;
     }
+
+    private void shootEnemy(Tower tower, ArrayList<Enemy> enemies, ArrayList<Route> Path, int timeScale, Game game){
+        Point towerCentre = tower.getCollider().centre();
+        double towerColliderRadius = tower.getCollider().bottomRight().y - tower.getCollider().centre().y;
+
+        int maxStep = 0;
+        Enemy farEnemy = null;
+        for(Enemy enemy: enemies){
+
+            if ((int) enemy.getStep()<Path.size() && Path.get((int) enemy.getStep()).getLocation().distanceTo(tower.getLocation()) <= tower.getRadius()) {
+                if (maxStep<(int) enemy.getStep()){
+                    maxStep = (int) enemy.getStep();
+                    farEnemy = enemy;
+                }
+            }
+        }
+
+        if(tower.getCoolDownRemain()<=0 && farEnemy!=null){
+
+            Point spawnProjectile = new Point(towerCentre.x + towerColliderRadius * Math.cos(tower.getRotation() - Math.PI / 2), towerCentre.y + towerColliderRadius * Math.sin(tower.getRotation() - Math.PI / 2));
+
+            // Engage
+            Drawing.drawCircle(spawnProjectile, 4, Colour.RED);
+
+            //game.getProjectiles().add(new Projectile())
+            tower.addProjectile(new ProjectileFactory().getProjectile(tower, farEnemy, spawnProjectile, 0));
+            tower.setCoolDownRemain(tower.getCoolDown());
+
+        }
+
+
+        tower.setCoolDownRemain( tower.getCoolDownRemain() - 1/60.0 * 1000 * timeScale );
+    }
+
+    private void drawProjectile(Game game){
+
+        ArrayList<Tower> Towers = game.getTowers();
+        ArrayList<Enemy> Enemy = game.getEnemy();
+
+        for(Tower tower: Towers) {
+
+            ArrayList<Projectile> projectilesRemoveList = new ArrayList<>();
+            for (Projectile projectile :tower.getProjectiles()){
+
+                projectile.draw();
+
+                if (Enemy.contains( projectile.getTarget() )){
+
+                    // If already hit
+                    if (projectile.getCollider().intersects( projectile.getTarget().getCollider(game.getPath()) )){
+
+                        // enemy health minus damage
+                        // remove projectile
+
+                        Enemy.remove(projectile.getTarget());
+                        game.setActiveNumber(game.getActiveNumber()-1);
+                        projectilesRemoveList.add(projectile);
+                        //tower.getProjectiles().remove(projectile);
+                        continue;
+                    }
+
+
+
+                    // Enemy is alive
+                    // shoot em
+
+                    projectile.setLocation( new Point(
+                            projectile.getLocation().x + game.getTimeScale() * projectile.getSpeed()*( Math.cos(projectile.getDirection())) ,
+                            projectile.getLocation().y + projectile.getSpeed()*( Math.sin(projectile.getDirection())) )
+                            );
+
+
+                    Point p1 = projectile.getLocation();
+                    Point p2 = game.getPath().get((int)projectile.getTarget().getStep()).getLocation();
+
+                    projectile.setDirection(-Math.atan2(p1.y - p2.y, p2.x - p1.x));
+
+
+                }else {
+                    projectile.setLocation( new Point(
+                            projectile.getLocation().x + game.getTimeScale() * projectile.getSpeed()*( Math.cos(projectile.getDirection())) ,
+                            projectile.getLocation().y + game.getTimeScale() * projectile.getSpeed()*( Math.sin(projectile.getDirection())) )
+                    );
+
+                    if(
+                            projectile.getLocation().x < 0 || projectile.getLocation().x > Window.getWidth() ||
+                            projectile.getLocation().y < 0 || projectile.getLocation().y > Window.getHeight()
+                    ){
+                        projectilesRemoveList.add(projectile);
+                    }
+
+
+
+                }
+
+
+            }
+
+            tower.getProjectiles().removeAll(projectilesRemoveList);
+
+        }
+
+    }
+
+    public void drawGG(){
+        panelFont.drawString("Game Over!", 500, 350);
+
+    }
+
 
 }

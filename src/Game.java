@@ -1,4 +1,7 @@
-import bagel.*;
+import bagel.AbstractGame;
+import bagel.Input;
+import bagel.Keys;
+import bagel.Window;
 import bagel.map.TiledMap;
 import bagel.util.Point;
 import bagel.util.Vector2;
@@ -21,9 +24,11 @@ public class Game extends AbstractGame {
     private double delayTime;
     private int timeScale = 1;
 
-    private final TiledMap map = new TiledMap("res\\levels\\2.tmx");
+    private final TiledMap map = new TiledMap("res\\levels\\3.tmx");
     private static final String BLOCKED_PROPERTY = "blocked";
     private final StatusPanel statusPanel = new StatusPanel();
+
+    private int health = 20;
 
     /**
      * Entry point for Alvin's TD game
@@ -43,7 +48,13 @@ public class Game extends AbstractGame {
         this.timeScale = timeScale;
     }
 
-    public void gameExit(){Window.close();System.exit(0);}
+    public void gameExit(Input input){
+        new StatusPanel().drawGG();
+        if(input.wasReleased(Keys.ENTER)) {
+            Window.close();
+            System.exit(0);
+        }
+    }
 
 
     /**
@@ -143,6 +154,8 @@ public class Game extends AbstractGame {
         Towers = new ArrayList<>();
         enemy = new ArrayList<>();
     }
+
+
     public ArrayList<Tower> getTowers(){
         return this.Towers;
     }
@@ -167,6 +180,18 @@ public class Game extends AbstractGame {
         return BLOCKED_PROPERTY;
     }
 
+    public int getActiveNumber() {
+        return activeNumber;
+    }
+
+    public void setActiveNumber(int activeNumber) {
+        this.activeNumber = activeNumber;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
     /**
      * Updates the game state approximately 60 times a second, potentially reading from input.
      * @param input The input instance which provides access to keyboard/mouse state information.
@@ -175,41 +200,49 @@ public class Game extends AbstractGame {
     protected void update(Input input) {
 
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
+
         if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
 
 
             enemy = Wave.get(waveNum).getEnemy();
 
             int enemyNum = enemy.size();
-            double timeDelay = enemy.get(0).getSpawnDelay();
+            double timeDelay = 0;
+            if (enemyNum!=0) {
+               timeDelay = enemy.get(0).getSpawnDelay();
+            }
+            if (enemyNum!=0 && enemy.get(enemyNum-1).getStep() < Path.size()) {
 
-            if (enemy.get(enemyNum-1).getStep() < Path.size()) {
-
-                spawnTime += (1/60.0) * 1000 * timeScale;
-                if (spawnTime>timeDelay && activeNumber!=enemyNum){
+                spawnTime += (1 / 60.0) * 1000 * timeScale;
+                if (spawnTime > timeDelay && activeNumber != enemyNum) {
                     activeNumber++;
                     spawnTime = 0;
                 }
 
-                for (int i=activeNumber-1;i>=0;i--) {
-                    if((enemy.get(i)).getStep() < Path.size()) {
-                        (enemy.get(i)).draw( Path.get( (int)enemy.get(i).getStep()) );
-                        (enemy.get(i)).setStep(enemy.get(i).getStep()+timeScale*enemy.get(i).getSpeed());
+                int i = activeNumber - 1;
+                while (i >= 0){
+
+                    if ((enemy.get(i)).getStep() < Path.size()) {
+                        (enemy.get(i)).draw(Path.get((int) enemy.get(i).getStep()));
+                        (enemy.get(i)).setStep(enemy.get(i).getStep() + timeScale * enemy.get(i).getSpeed());
+                    }else{
+                        health -= 1;
+                        enemy.remove(i);
+                        activeNumber-=1;
                     }
+                    i--;
+                    // Reduce health
                 }
-                statusPanel.drawPanel(input, timeScale,-1,this);
+
+                statusPanel.drawPanel(input, timeScale, -1, this);
             }else{
                 activeNumber = 0;
                 spawnTime = 0;
                 waveNum++;
             }
-
         }else{
 
-            if (!(waveNum < Wave.size())){
-                // End game
-                gameExit();
-            }else {
+            if (waveNum < Wave.size()) {
                 // Wait delay
                 double delayRemain = Wave.get(waveNum).getWaveDelay() - delayTime;
 
@@ -220,11 +253,14 @@ public class Game extends AbstractGame {
                 }
 
                 statusPanel.drawPanel(input, timeScale, delayRemain, this);
-
+            }
+            else{
+                // End game
+                gameExit(input);
             }
 
-        }
 
+        }
 
 
     }

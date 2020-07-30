@@ -1,5 +1,8 @@
 import bagel.DrawOptions;
 import bagel.Image;
+import bagel.util.Rectangle;
+
+import java.util.ArrayList;
 
 public abstract class Enemy {
 
@@ -8,10 +11,10 @@ public abstract class Enemy {
     private int spawnDelay;
     private double speed;
 
-    public Enemy(int spawnDelay, String enemyImagePath){
+    public Enemy(int spawnDelay, Image enemyImage){
 
         this.spawnDelay = spawnDelay;
-        this.enemy = new Image(enemyImagePath);
+        this.enemy = enemyImage;
     }
 
 
@@ -41,5 +44,9 @@ public abstract class Enemy {
 
     public void draw(Route route){
         this.enemy.draw(route.getLocation().x, route.getLocation().y, new DrawOptions().setRotation(route.getRotation()));
+    }
+
+    public Rectangle getCollider(ArrayList<Route> Path) {
+        return this.enemy.getBoundingBoxAt(Path.get((int)step).getLocation());
     }
 }

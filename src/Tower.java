@@ -1,14 +1,17 @@
 import bagel.DrawOptions;
 import bagel.Image;
-import bagel.Input;
 import bagel.util.Point;
 import bagel.util.Rectangle;
+
+import java.util.ArrayList;
 
 
 public class Tower {
 
     private Image towerImage;
-    private double coolDown;
+
+    private final double coolDown;
+    private double coolDownRemain;
 
     private double rotation;
     private Point TL_location;
@@ -18,16 +21,19 @@ public class Tower {
     private Rectangle collider;
     private double radius;
 
-    public Tower(String towerImagePath, double coolDown, double radius){
+
+    private static MusicPlayer sound;
+
+    private final ArrayList<Projectile> Projectiles = new ArrayList<>();
+
+    public Tower(String towerImagePath, double coolDown, double radius, MusicPlayer sound){
 
         this.towerImage = new Image(towerImagePath);
         this.coolDown = coolDown;
-        this.rotation = 0;
+        this.coolDownRemain = 0;
         this.radius = radius;
-        this.TL_location = new Point(100,100);
         this.isPlacing = true;
-        //this.collider = this.towerImage.getBoundingBox();
-        this.collider = new Rectangle(new Point(0,0), 10,10);
+        this.sound = sound;
     }
 
     public double getRotation() {
@@ -79,5 +85,35 @@ public class Tower {
 
     public double getRadius() {
         return radius;
+    }
+
+    public double getCoolDown() {
+        return coolDown;
+    }
+
+    public double getCoolDownRemain() {
+        return coolDownRemain;
+    }
+
+    public void setCoolDownRemain(double coolDownRemain) {
+        this.coolDownRemain = coolDownRemain;
+    }
+
+
+    public ArrayList<Projectile> getProjectiles() {
+        return Projectiles;
+    }
+
+    public void addProjectile(Projectile projectile) {
+        this.Projectiles.add(projectile);
+    }
+
+    public void removeProjectile(ArrayList<Projectile> projectile, int index) {
+        this.Projectiles.remove(index);
+    }
+
+
+    public MusicPlayer getSound(){
+        return sound;
     }
 }

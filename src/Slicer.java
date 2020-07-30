@@ -1,6 +1,8 @@
+import bagel.Image;
+
 public class Slicer extends Enemy{
 
-    private static String slicerImagePath = "res\\images\\slicer.png";
+    private static final Image slicerImage = new Image("res\\images\\slicer.png");
 
     /**
      * Constructor for Slicer
@@ -8,7 +10,7 @@ public class Slicer extends Enemy{
      */
 
     public Slicer(int spawnDelay) {
-        super(spawnDelay, slicerImagePath);
+        super(spawnDelay, slicerImage);
         setSpeed(2);
     }
 }

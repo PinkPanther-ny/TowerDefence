@@ -1,6 +1,8 @@
+import bagel.Image;
+
 public class Superslicer extends Enemy{
 
-    private static String slicerImagePath = "res\\images\\superslicer.png";
+    private static final Image superSlicerImage = new Image("res\\images\\superslicer.png");
 
     /**
      * Constructor for Superslicer
@@ -8,7 +10,7 @@ public class Superslicer extends Enemy{
      */
 
     public Superslicer(int spawnDelay) {
-        super(spawnDelay, slicerImagePath);
+        super(spawnDelay, superSlicerImage);
         setSpeed(2*3/4.0);
     }
 }

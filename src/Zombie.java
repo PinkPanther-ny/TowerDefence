@@ -1,6 +1,8 @@
+import bagel.Image;
+
 public class Zombie extends Enemy{
 
-    private static String slicerImagePath = "res\\images\\zombie.png";
+    private static final Image zombieImage = new Image("res\\images\\zombie.png");
 
     /**
      * Constructor for Zombie
@@ -8,7 +10,7 @@ public class Zombie extends Enemy{
      */
 
     public Zombie(int spawnDelay) {
-        super(spawnDelay, slicerImagePath);
+        super(spawnDelay, zombieImage);
         setSpeed(1);
     }
 }
