@@ -3,14 +3,16 @@ import bagel.Image;
 import bagel.util.Point;
 import bagel.util.Rectangle;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 
 
-public class Tower {
+public abstract class Tower {
 
     private Image towerImage;
 
-    private final double coolDown;
+    private double coolDown;
     private double coolDownRemain;
 
     private double rotation;
@@ -21,19 +23,20 @@ public class Tower {
     private Rectangle collider;
     private double radius;
 
-
-    private static MusicPlayer sound;
+    private int price;
 
     private final ArrayList<Projectile> Projectiles = new ArrayList<>();
 
-    public Tower(String towerImagePath, double coolDown, double radius, MusicPlayer sound){
+    public Tower(){
 
-        this.towerImage = new Image(towerImagePath);
-        this.coolDown = coolDown;
         this.coolDownRemain = 0;
-        this.radius = radius;
         this.isPlacing = true;
-        this.sound = sound;
+
+        this.readInfo();
+        /*this.towerImage = new Image(towerImagePath);
+        this.radius = radius;
+        this.coolDown = coolDown;
+        this.price = price;*/
     }
 
     public double getRotation() {
@@ -68,11 +71,6 @@ public class Tower {
         );
     }
 
-    public void drawTower(Point TL_location){
-        setCollider(TL_location);
-        this.towerImage.drawFromTopLeft(TL_location.x, TL_location.y);
-
-    }
     public void drawTower(Point TL_location, DrawOptions drawOptions){
         setCollider(TL_location);
         this.towerImage.drawFromTopLeft(TL_location.x, TL_location.y, drawOptions);
@@ -99,7 +97,6 @@ public class Tower {
         this.coolDownRemain = coolDownRemain;
     }
 
-
     public ArrayList<Projectile> getProjectiles() {
         return Projectiles;
     }
@@ -108,12 +105,42 @@ public class Tower {
         this.Projectiles.add(projectile);
     }
 
-    public void removeProjectile(ArrayList<Projectile> projectile, int index) {
-        this.Projectiles.remove(index);
+    public int getPrice() {
+        return price;
     }
 
+    private void readInfo(){
 
-    public MusicPlayer getSound(){
-        return sound;
+        String type = null;
+        if (this instanceof Tank){
+            type = "TANK";
+        }else if (this instanceof SuperTank){
+            type = "SUPERTANK";
+        }else if(this instanceof Fighter){
+            type = "FIGHTER";
+        }
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader("res/levels/towers.txt"))) {
+
+            String text;
+            String []line;
+
+            while ((text = br.readLine()) != null) {
+                text = text.replaceAll("\\s+","");
+                line = text.split(",");
+                if (line[0].equalsIgnoreCase(type)) {
+
+                    coolDown = Double.parseDouble(line[1]);
+                    radius = Double.parseDouble(line[2]);
+                    price = Integer.parseInt(line[3]);
+                    towerImage = new Image(line[4]);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 }

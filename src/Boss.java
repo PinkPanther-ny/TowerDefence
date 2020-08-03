@@ -1,13 +1,12 @@
 import bagel.Image;
 
-public class Superslicer extends Enemy{
-
+public class Boss extends Enemy{
     /**
-     * Constructor for Superslicer
+     * Constructor for Megaslicer
      * @param spawnDelay the delay of spawn time between each slicer
      */
 
-    public Superslicer(int spawnDelay) {
+    public Boss(int spawnDelay) {
         super(spawnDelay);
     }
 }

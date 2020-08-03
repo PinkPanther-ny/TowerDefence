@@ -3,9 +3,9 @@ import bagel.util.Point;
 
 public class TankProjectile extends Projectile{
 
-    private static Image tankProjectileImage = new Image("res\\images\\tank_projectile.png");
+    private static final Image tankProjectileImage = new Image("res\\images\\tank_projectile.png");
 
     public TankProjectile(Enemy target, Point location, double direction) {
-        super(tankProjectileImage,4, target, location, direction);
+        super(tankProjectileImage,12, target, location, direction, 4);
     }
 }

@@ -1,6 +1,5 @@
 import bagel.Image;
 import bagel.util.Point;
-import bagel.util.Rectangle;
 
 public class Projectile {
     private final Image projectileImage;
@@ -8,26 +7,23 @@ public class Projectile {
 
     private Point location;
     private double direction;
-    private Enemy target;
+    private final Enemy target;
 
-    /*
-    public Projectile(Image image, Point location, double speed, double direction){
-        this.projectileImage = image;
-        this.location = location;
-        this.speed = speed;
-        this.direction = direction;
+    private final double damage;
 
-    }*/
-    public Projectile(Image image, double speed, Enemy target, Point location, double direction){
+    public double getDamage() {
+        return damage;
+    }
+
+    public Projectile(Image image, double speed, Enemy target, Point location, double direction, double damage){
         this.projectileImage = image;
         this.speed = speed;
         this.target = target;
         this.location = location;
         this.direction = direction;
+        this.damage = damage;
     }
-    public Rectangle getCollider() {
-        return this.projectileImage.getBoundingBoxAt(this.location);
-    }
+
     public double getDirection() {
         return direction;
     }
@@ -42,10 +38,6 @@ public class Projectile {
 
     public void setLocation(Point location) {
         this.location = location;
-    }
-
-    public void setTarget(Enemy target) {
-        this.target = target;
     }
 
     public Enemy getTarget() {

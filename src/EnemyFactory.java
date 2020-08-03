@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-
 public class EnemyFactory {
 
     public ArrayList<Enemy> getEnemy(String enemyType, int spawnDelay, int enemyNum){
@@ -47,6 +46,15 @@ public class EnemyFactory {
             }
             return Zombie;
         }
+
+        if(enemyType.equalsIgnoreCase("BOSS")) {
+            ArrayList<Enemy> Boss = new ArrayList<>();
+            for (int i = 0; i < enemyNum; i++) {
+                Boss.add(new Boss(spawnDelay));
+            }
+            return Boss;
+        }
+
         return null;
     }
 }

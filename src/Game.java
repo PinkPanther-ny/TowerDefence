@@ -29,6 +29,10 @@ public class Game extends AbstractGame {
     private final StatusPanel statusPanel = new StatusPanel();
 
     private int health = 20;
+    private double money = 500;
+
+    private boolean gameOver = false;
+
 
     /**
      * Entry point for Alvin's TD game
@@ -36,8 +40,26 @@ public class Game extends AbstractGame {
      */
     public static void main(String[] args) {
         // Create new instance of game and run it
+
+        showPricePerformance();
         Game game = new Game();
         game.run();
+    }
+
+
+    /**
+     * Setup the game
+     */
+    public Game(){
+        // Constructor
+        Wave = getWaveInfo(waveFilePath);
+        Path = getWholeRoute(map);
+        waveNum = 0;
+        activeNumber = 1;
+        spawnTime = 0;
+        delayTime = 0;
+        Towers = new ArrayList<>();
+        enemy = new ArrayList<>();
     }
 
     public int getTimeScale() {
@@ -48,6 +70,10 @@ public class Game extends AbstractGame {
         this.timeScale = timeScale;
     }
 
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
     public void gameExit(Input input){
         new StatusPanel().drawGG();
         if(input.wasReleased(Keys.ENTER)) {
@@ -55,7 +81,6 @@ public class Game extends AbstractGame {
             System.exit(0);
         }
     }
-
 
     /**
      *
@@ -108,7 +133,7 @@ public class Game extends AbstractGame {
             EnemyFactory enemyFactory = new EnemyFactory();
 
             while ((text = br.readLine()) != null) {
-
+                text = text.replaceAll("\\s+","");
                 line = text.split(",");
                 if (line.length==5) {
 
@@ -139,22 +164,6 @@ public class Game extends AbstractGame {
 
         return allWave;
     }
-
-    /**
-     * Setup the game
-     */
-    public Game(){
-        // Constructor
-        Wave = getWaveInfo(waveFilePath);
-        Path = getWholeRoute(map);
-        waveNum = 0;
-        activeNumber = 1;
-        spawnTime = 0;
-        delayTime = 0;
-        Towers = new ArrayList<>();
-        enemy = new ArrayList<>();
-    }
-
 
     public ArrayList<Tower> getTowers(){
         return this.Towers;
@@ -192,6 +201,66 @@ public class Game extends AbstractGame {
         return health;
     }
 
+    public int getWaveNumber() {
+        return Wave.get(waveNum).getWaveNumber();
+    }
+
+    public void setMoney(double money) {
+        this.money = money;
+    }
+
+    public double getMoney() {
+        return money;
+    }
+
+    public static void showPricePerformance(){
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader("res/levels/enemies.txt"))) {
+
+            String text;
+            String []line;
+            double health,speed,reward;
+            br.readLine();
+            while ((text = br.readLine()) != null) {
+                text = text.replaceAll(" ","");
+                line = text.split(",");
+
+                health = Double.parseDouble(line[1]);
+                speed = Double.parseDouble(line[2]);
+                reward = Double.parseDouble(line[3]);
+
+                System.out.println(line[0] + " ||(health*speed) " + health*speed + " ||(reward) " + reward + " ||(reward per unit) " + reward/(health*speed));
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader("res/levels/towers.txt"))) {
+
+            String text;
+            String []line;
+            double cooldown,radius,price;
+            br.readLine();
+            while ((text = br.readLine()) != null) {
+
+                text = text.replaceAll(" ","");
+                line = text.split(",");
+
+                cooldown = Double.parseDouble(line[1]);
+                radius = Double.parseDouble(line[2]);
+                price = Double.parseDouble(line[3]);
+
+                System.out.println(line[0] + " ||(radius/cooldown) " + radius/cooldown + " ||(price) " + price + " ||(price per unit) " + price/(radius/cooldown));
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * Updates the game state approximately 60 times a second, potentially reading from input.
      * @param input The input instance which provides access to keyboard/mouse state information.
@@ -200,49 +269,60 @@ public class Game extends AbstractGame {
     protected void update(Input input) {
 
         map.draw(0, 0, 0, 0, Window.getWidth(), Window.getHeight());
+        //map2.draw(0,0,0,0,Window.getWidth(), Window.getHeight());
+        if(!gameOver) {
 
-        if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
+            if (waveNum < Wave.size() && !Wave.get(waveNum).isDelay()) {
+                enemy = Wave.get(waveNum).getEnemy();
 
-
-            enemy = Wave.get(waveNum).getEnemy();
-
-            int enemyNum = enemy.size();
-            double timeDelay = 0;
-            if (enemyNum!=0) {
-               timeDelay = enemy.get(0).getSpawnDelay();
-            }
-            if (enemyNum!=0 && enemy.get(enemyNum-1).getStep() < Path.size()) {
-
-                spawnTime += (1 / 60.0) * 1000 * timeScale;
-                if (spawnTime > timeDelay && activeNumber != enemyNum) {
-                    activeNumber++;
-                    spawnTime = 0;
+                int enemyNum = enemy.size();
+                double timeDelay = 0;
+                if (enemyNum != 0) {
+                    timeDelay = enemy.get(0).getSpawnDelay();
                 }
+                if (enemyNum != 0 && enemy.get(enemyNum - 1).getStep() < Path.size()) {
 
-                int i = activeNumber - 1;
-                while (i >= 0){
-
-                    if ((enemy.get(i)).getStep() < Path.size()) {
-                        (enemy.get(i)).draw(Path.get((int) enemy.get(i).getStep()));
-                        (enemy.get(i)).setStep(enemy.get(i).getStep() + timeScale * enemy.get(i).getSpeed());
-                    }else{
-                        health -= 1;
-                        enemy.remove(i);
-                        activeNumber-=1;
+                    spawnTime += (1 / 60.0) * 1000 * timeScale;
+                    if (spawnTime > timeDelay && activeNumber != enemyNum) {
+                        activeNumber++;
+                        spawnTime = 0;
                     }
-                    i--;
-                    // Reduce health
+
+                    int i = activeNumber - 1;
+                    while (i >= 0) {
+
+                        if ((enemy.get(i)).getStep() < Path.size()) {
+                            (enemy.get(i)).draw(Path.get((int) enemy.get(i).getStep()));
+                            (enemy.get(i)).setStep(enemy.get(i).getStep() + timeScale * enemy.get(i).getSpeed());
+                        } else {
+
+                            // Reduce health
+                            health -= 1;
+                            if (health <= 0) {
+                                setGameOver(true);
+                            }
+                            enemy.remove(i);
+                            activeNumber -= 1;
+                        }
+                        i--;
+                    }
+
+
+                    statusPanel.drawPanel(input, timeScale, -1, this);
+                } else if (enemyNum!=0 && enemy.get(enemyNum - 1).getStep() >= Path.size()) {
+                    health -= 1;
+                    if (health <= 0) {
+                        setGameOver(true);
+                    }
+                    activeNumber = 0;
+                    spawnTime = 0;
+                    waveNum++;
+                }else{
+                    activeNumber = 0;
+                    spawnTime = 0;
+                    waveNum++;
                 }
-
-                statusPanel.drawPanel(input, timeScale, -1, this);
-            }else{
-                activeNumber = 0;
-                spawnTime = 0;
-                waveNum++;
-            }
-        }else{
-
-            if (waveNum < Wave.size()) {
+            } else if (waveNum < Wave.size()) {
                 // Wait delay
                 double delayRemain = Wave.get(waveNum).getWaveDelay() - delayTime;
 
@@ -253,15 +333,13 @@ public class Game extends AbstractGame {
                 }
 
                 statusPanel.drawPanel(input, timeScale, delayRemain, this);
-            }
-            else{
-                // End game
+
+            }else {
                 gameExit(input);
             }
-
-
+        }else{
+            gameExit(input);
         }
-
 
     }
 }

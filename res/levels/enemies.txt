@@ -1,0 +1,7 @@
+CLASS       ,   HEALTH  ,   SPEED   ,   REWARD  ,   PATH
+SLICER      ,   20      ,   2       ,   1       ,   res\\images\\slicer.png
+SUPERSLICER ,   40      ,   2       ,   3       ,   res\\images\\superslicer.png
+MEGASLICER  ,   25      ,   5       ,   3       ,   res\\images\\megaslicer.png
+APEXSLICER  ,   170     ,   1       ,   5       ,   res\\images\\apexslicer.png
+ZOMBIE      ,   30      ,   3       ,   1     	,   res\\images\\zombie.png
+BOSS        ,   600     ,   0.6     ,   80     	,   res\images\boss.png

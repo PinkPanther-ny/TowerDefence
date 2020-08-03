@@ -1,10 +1,10 @@
 import java.util.ArrayList;
 
 public class Wave {
-    private int waveNum;
+    private final int waveNumber;
     private ArrayList<Enemy> Enemy;
     private int waveDelay = 0;
-    private boolean isDelay;
+    private final boolean isDelay;
 
     public ArrayList<Enemy> getEnemy() {
         return Enemy;
@@ -19,15 +19,20 @@ public class Wave {
     }
 
     public Wave(int waveNum, ArrayList<Enemy> Enemy){
-        this.waveNum = waveNum;
+        this.waveNumber = waveNum;
         this.Enemy = Enemy;
         this.isDelay = false;
     }
 
     public Wave(int waveNum, int waveDelay){
-        this.waveNum = waveNum;
+        this.waveNumber = waveNum;
         this.waveDelay = waveDelay;
         this.isDelay = true;
     }
+
+    public int getWaveNumber() {
+        return waveNumber;
+    }
+
 
 }

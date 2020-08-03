@@ -1,0 +1,4 @@
+CLASS	    ,	COOLDOWN    ,	RADIUS	,	PRICE	,	PATH
+TANK	    ,	400	        ,	190	    ,	60	    ,	res\\images\\tank.png
+SUPERTANK   ,	120	        ,	250	    ,	140	    ,	res\\images\\superTank.png
+FIGHTER	    ,	150	        ,	190	    ,	90	    ,	res\\images\\Fighter.gif
