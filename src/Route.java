@@ -2,8 +2,8 @@ import bagel.util.Point;
 
 public class Route {
 
-    private Point location;
-    private double rotation;
+    private final Point location;
+    private final double rotation;
 
     public double getRotation() {
         return rotation;
